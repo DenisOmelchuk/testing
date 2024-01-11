@@ -28,9 +28,9 @@ def api_create_user(request):
     if serializer.is_valid():
         user = serializer.save()
 
-        email = serializer.validated_data.get('email', None)
-        token = EmailConfirmationToken.objects.create(user=user)
-        send_confirmation_email(email=user.email, token_id=token.pk, user_id=user.pk)
+        # email = serializer.validated_data.get('email', None)
+        # token = EmailConfirmationToken.objects.create(user=user)
+        # send_confirmation_email(email=user.email, token_id=token.pk, user_id=user.pk)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
