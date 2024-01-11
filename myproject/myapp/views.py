@@ -27,6 +27,10 @@ def api_create_user(request):
 
     if serializer.is_valid():
         user = serializer.save()
+
+        email = serializer.validated_data.get('email', None)
+        token = EmailConfirmationToken.objects.create(user=user)
+        send_confirmation_email(email=user.email, token_id=token.pk, user_id=user.pk)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -42,15 +46,15 @@ class SendUserConfirmationTokenAPIView(APIView):
 
 
 def confirm_email_view(request):
-    token_id = request.GET.get['token_id', None]
-    user_id = request.GET.get['user_id', None]
+    token_id = request.GET.get('token_id', None)
+    user_id = request.GET.get('user_id', None)
     try:
         token = EmailConfirmationToken.objects.get(pk=token_id)
         user = token.user
-        user.is_email_verified = True
+        user.is_email_confirmed = True
         user.save()
         data = {'is_email_confirmed': False}
-        return render(request, template_name='confirm_email.html', context=data)
+        return HttpResponse('success', status=status.HTTP_200_OK)
     except EmailConfirmationToken.DoesNotExist:
         data = {'is_email_confirmed': False}
         return render(request, template_name='confirm_email.html', context=data)
